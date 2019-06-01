@@ -116,10 +116,10 @@ async def amireallyalive(alive):
     if not alive.text[0].isalpha() and alive.text[0] not in ("/", "#", "@", "!"):
         await alive.edit(
             "`"
-            "Nigga I ain't dead yet \n\n"
-            f"Telethon version: {version.__version__} \n"
-            f"Python version: {python_version()} \n"
-            f"Nigga's I'd: {DEFAULTUSER}"
+            "Oof!! Bot working bro 💀 \n\n"
+            f"Tele ver: {version.__version__} \n"
+            f"Snake type : {python_version()} \n"
+            f"Sar ur I'd: {DEFAULTUSER}"
             "`"
             )
 
@@ -134,7 +134,7 @@ async def amireallyaliveuser(username):
             newuser = message[8:]
             global DEFAULTUSER
             DEFAULTUSER = newuser
-            output = 'Successfully changed user to ' + newuser + '!'
+            output = 'Successfully kanged name to ' + newuser + '!'
         await username.edit(
             "`"
             f"{output}"
