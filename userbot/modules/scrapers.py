@@ -7,27 +7,27 @@
 """ Userbot module containing various scrapers. """
 
 import os
+from asyncio import create_subprocess_shell as asyncsh
+from asyncio.subprocess import PIPE as asyncsh_PIPE
 from html import unescape
 from re import findall
 from urllib import parse
 from urllib.error import HTTPError
-from asyncio import create_subprocess_shell as asyncsh
-from asyncio.subprocess import PIPE as asyncsh_PIPE
 
-from wikipedia import summary
-from wikipedia.exceptions import DisambiguationError, PageError
-from urbandict import define
-from requests import get
+from emoji import get_emoji_regexp
 from google_images_download import google_images_download
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googletrans import LANGUAGES, Translator
 from gtts import gTTS
-from emoji import get_emoji_regexp
 from pytube import YouTube
 from pytube.helpers import safe_filename
+from requests import get
+from urbandict import define
+from wikipedia import summary
+from wikipedia.exceptions import DisambiguationError, PageError
 
-from userbot import HELPER, LOGGER, LOGGER_GROUP, YOUTUBE_API_KEY, bot
+from userbot import CMD_HELP, BOTLOG, BOTLOG_CHATID, YOUTUBE_API_KEY, bot
 from userbot.events import register
 
 LANG = "en"
@@ -36,7 +36,8 @@ LANG = "en"
 @register(outgoing=True, pattern="^.img (.*)")
 async def img_sampler(event):
     """ For .img command, search and return images matching the query. """
-    if not event.text[0].isalpha() and event.text[0] not in ("/", "#", "@", "!"):
+    if not event.text[0].isalpha() and event.text[0] not in (
+            "/", "#", "@", "!"):
         await event.edit("Processing...")
         query = event.pattern_match.group(1)
         lim = findall(r"lim=\d+", query)
@@ -69,7 +70,8 @@ async def img_sampler(event):
 @register(outgoing=True, pattern=r"^.google (.*)")
 async def gsearch(q_event):
     """ For .google command, do a Google search. """
-    if not q_event.text[0].isalpha() and q_event.text[0] not in ("/", "#", "@", "!"):
+    if not q_event.text[0].isalpha() and q_event.text[0] not in (
+            "/", "#", "@", "!"):
         match_ = q_event.pattern_match.group(1)
         match = parse.quote_plus(match_)
         result_ = await asyncsh(
@@ -83,9 +85,9 @@ async def gsearch(q_event):
         await q_event.edit(
             "**Search Query:**\n`" + match_ + "`\n\n**Result:**\n" + result
         )
-        if LOGGER:
+        if BOTLOG:
             await q_event.client.send_message(
-                LOGGER_GROUP,
+                BOTLOG_CHATID,
                 "Google Search query " + match_ + " was executed successfully",
             )
 
@@ -93,7 +95,8 @@ async def gsearch(q_event):
 @register(outgoing=True, pattern=r"^.wiki (.*)")
 async def wiki(wiki_q):
     """ For .google command, fetch content from Wikipedia. """
-    if not wiki_q.text[0].isalpha() and wiki_q.text[0] not in ("/", "#", "@", "!"):
+    if not wiki_q.text[0].isalpha() and wiki_q.text[0] not in (
+            "/", "#", "@", "!"):
         match = wiki_q.pattern_match.group(1)
         try:
             summary(match)
@@ -120,9 +123,9 @@ async def wiki(wiki_q):
         await wiki_q.edit(
             "**Search:**\n`" + match + "`\n\n**Result:**\n" + result
         )
-        if LOGGER:
+        if BOTLOG:
             await wiki_q.client.send_message(
-                LOGGER_GROUP,
+                BOTLOG_CHATID,
                 f"Wiki query {match} was executed successfully"
             )
 
@@ -175,9 +178,9 @@ async def urban_dict(ud_e):
                 mean[0]["example"] +
                 "__"
             )
-            if LOGGER:
+            if BOTLOG:
                 await ud_e.client.send_message(
-                    LOGGER_GROUP, "ud query " + query + " executed successfully."
+                    BOTLOG_CHATID, "ud query " + query + " executed successfully."
                 )
         else:
             await ud_e.edit("No result found for **" + query + "**")
@@ -186,7 +189,8 @@ async def urban_dict(ud_e):
 @register(outgoing=True, pattern=r"^.tts(?: |$)([\s\S]*)")
 async def text_to_speech(query):
     """ For .tts command, a wrapper for Google Text-to-Speech. """
-    if not query.text[0].isalpha() and query.text[0] not in ("/", "#", "@", "!"):
+    if not query.text[0].isalpha() and query.text[0] not in (
+            "/", "#", "@", "!"):
         textx = await query.get_reply_message()
         message = query.pattern_match.group(1)
         if message:
@@ -222,9 +226,9 @@ async def text_to_speech(query):
         with open("k.mp3", "r"):
             await query.client.send_file(query.chat_id, "k.mp3", voice_note=True)
             os.remove("k.mp3")
-            if LOGGER:
+            if BOTLOG:
                 await query.client.send_message(
-                    LOGGER_GROUP, "tts of " + message + " executed successfully!"
+                    BOTLOG_CHATID, "tts of " + message + " executed successfully!"
                 )
             await query.delete()
 
@@ -232,7 +236,8 @@ async def text_to_speech(query):
 @register(outgoing=True, pattern=r"^.trt(?: |$)([\s\S]*)")
 async def translateme(trans):
     """ For .trt command, translate the given text using Google Translate. """
-    if not trans.text[0].isalpha() and trans.text[0] not in ("/", "#", "@", "!"):
+    if not trans.text[0].isalpha() and trans.text[0] not in (
+            "/", "#", "@", "!"):
         translator = Translator()
         textx = await trans.get_reply_message()
         message = trans.pattern_match.group(1)
@@ -250,16 +255,16 @@ async def translateme(trans):
             await trans.edit("Invalid destination language.")
             return
 
-        source_lan = LANGUAGES[f'{reply_text.src}']
-        transl_lan = LANGUAGES[f'{reply_text.dest}']
+        source_lan = LANGUAGES[f'{reply_text.src.lower()}']
+        transl_lan = LANGUAGES[f'{reply_text.dest.lower()}']
         reply_text = f"**Source ({source_lan.title()}):**`\n{message}`**\n\
 \nTranslation ({transl_lan.title()}):**`\n{reply_text.text}`"
 
         await trans.client.send_message(trans.chat_id, reply_text)
         await trans.delete()
-        if LOGGER:
+        if BOTLOG:
             await trans.client.send_message(
-                LOGGER_GROUP,
+                BOTLOG_CHATID,
                 f"Translate query {message} was executed successfully",
             )
 
@@ -267,27 +272,38 @@ async def translateme(trans):
 @register(pattern=".lang (.*)", outgoing=True)
 async def lang(value):
     """ For .lang command, change the default langauge of userbot scrapers. """
-    if not value.text[0].isalpha() and value.text[0] not in ("/", "#", "@", "!"):
+    if not value.text[0].isalpha() and value.text[0] not in (
+            "/", "#", "@", "!"):
         global LANG
         LANG = value.pattern_match.group(1)
-        if LOGGER:
+        await value.edit("Default language changed to **" + LANG + "**")
+        if BOTLOG:
             await value.client.send_message(
-                LOGGER_GROUP, "Default language changed to **" + LANG + "**"
+                BOTLOG_CHATID, "Default language changed to **" + LANG + "**"
             )
-            await value.edit("Default language changed to **" + LANG + "**")
 
 
 @register(outgoing=True, pattern="^.yt (.*)")
 async def yt_search(video_q):
     """ For .yt command, do a YouTube search from Telegram. """
-    if not video_q.text[0].isalpha() and video_q.text[0] not in ("/", "#", "@", "!"):
+    if not video_q.text[0].isalpha() and video_q.text[0] not in (
+            "/", "#", "@", "!"):
         query = video_q.pattern_match.group(1)
         result = ''
         i = 1
+
+        if not YOUTUBE_API_KEY:
+            await video_q.edit(
+                "`Error: YouTube API key missing!\
+                Add it to environment vars or config.env.`"
+            )
+            return
+
+        await video_q.edit("```Processing...```")
+
         full_response = youtube_search(query)
         videos_json = full_response[1]
 
-        await video_q.edit("```Processing...```")
         for video in videos_json:
             result += f"{i}. {unescape(video['snippet']['title'])} \
                 \nhttps://www.youtube.com/watch?v={video['id']['videoId']}\n"
@@ -304,8 +320,7 @@ def youtube_search(
         token=None,
         location=None,
         location_radius=None
-    ):
-
+):
     """ Do a YouTube search. """
     youtube = build('youtube', 'v3',
                     developerKey=YOUTUBE_API_KEY, cache_discovery=False)
@@ -327,19 +342,20 @@ def youtube_search(
             videos.append(search_result)
     try:
         nexttok = search_response["nextPageToken"]
-        return(nexttok, videos)
+        return (nexttok, videos)
     except HttpError:
         nexttok = "last_page"
-        return(nexttok, videos)
+        return (nexttok, videos)
     except KeyError:
         nexttok = "KeyError, try again."
-        return(nexttok, videos)
+        return (nexttok, videos)
 
 
 @register(outgoing=True, pattern=r".yt_dl (\S*) ?(\S*)")
 async def download_video(v_url):
     """ For .yt_dl command, download videos from YouTube. """
-    if not v_url.text[0].isalpha() and v_url.text[0] not in ("/", "#", "@", "!"):
+    if not v_url.text[0].isalpha() and v_url.text[0] not in (
+            "/", "#", "@", "!"):
         url = v_url.pattern_match.group(1)
         quality = v_url.pattern_match.group(2)
 
@@ -383,7 +399,7 @@ async def download_video(v_url):
             await v_url.edit(
                 ("**File larger than 50MB. Sending the link instead.\n**"
                  f"Get the video [here]({video_stream.url})\n\n"
-                 "**If the video opens instead of playing, right-click(or long press) and "
+                 "**If the video plays instead of downloading, right click(or long press on touchscreen) and "
                  "press 'Save Video As...'(may depend on the browser) to download the video.**")
             )
             return
@@ -392,7 +408,7 @@ async def download_video(v_url):
 
         video_stream.download(filename=video.title)
 
-        url = video.thumbnail_url
+        url = f"https://img.youtube.com/vi/{video.video_id}/maxresdefault.jpg"
         resp = get(url)
         with open('thumbnail.jpg', 'wb') as file:
             file.write(resp.content)
@@ -415,42 +431,43 @@ def deEmojify(inputString):
     return get_emoji_regexp().sub(u'', inputString)
 
 
-HELPER.update({
+CMD_HELP.update({
     'img': ".img <search_query>\
     \nUsage: Does an image search on Google and shows two images."
 })
-HELPER.update({
+CMD_HELP.update({
     'google': ".google <search_query>\
     \nUsage: Does a search on Google."
 })
-HELPER.update({
+CMD_HELP.update({
     'wiki': ".wiki <search_query>\
     \nUsage: Does a Wikipedia search."
 })
-HELPER.update({
+CMD_HELP.update({
     'ud': ".ud <search_query>\
     \nUsage: Does a search on Urban Dictionary."
 })
-HELPER.update({
+CMD_HELP.update({
     'tts': ".tts <text> or reply to someones text with .trt\
     \nUsage: Translates text to speech for the default language which is set."
 })
-HELPER.update({
+CMD_HELP.update({
     'trt': ".trt <text> or reply to someones text with .trt\
     \nUsage: Translates text to the default language which is set."
 })
-HELPER.update({
+CMD_HELP.update({
     'lang': ".lang <lang>\
     \nUsage: Changes the default language of userbot scrapers used for Google TRT, \
     TTS may not work."
 })
-HELPER.update({
+CMD_HELP.update({
     'yt': ".yt <search_query>\
     \nUsage: Does a YouTube search. "
 })
-HELPER.update({
+CMD_HELP.update({
     'yt_dl': ".yt_dl <url> <quality>(optional)\
     \nUsage: Download videos from YouTube. \
 If no quality is specified, the highest downloadable quality is downloaded. \
 Will send the link if the video is larger than 50 MB."
 })
+
