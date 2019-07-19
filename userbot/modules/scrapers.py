@@ -83,11 +83,12 @@ async def gsearch(q_event):
         await q_event.edit(
             "**Search Query:**\n`" + match_ + "`\n\n**Result:**\n" + result
         )
-        if LOGGER:
+        if BOTLOG:
             await q_event.client.send_message(
-                LOGGER_GROUP,
+                BOTLOG_CHATID,
                 "Google Search query " + match_ + " was executed successfully",
             )
+
 
 
 @register(outgoing=True, pattern=r"^.wiki (.*)")
