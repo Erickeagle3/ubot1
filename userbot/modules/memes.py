@@ -275,7 +275,7 @@ async def vapor(vpr):
         elif textx:
             message = textx.text
         else:
-            await vpr.edit("`Ｇｉｖｅ ｓｏｍｅ ｔｅｘｔ ｆｏｒ ｖａｐｏｒ！`")
+            await vpr.edit("`BSDK GIVE TEXT！`")
             return
 
         reply_text = str(message).translate(WIDE_MAP)
@@ -469,7 +469,7 @@ async def typewriter(typew):
         elif textx:
             message = textx.text
         else:
-            await typew.edit("`Give a text to type!`")
+            await typew.edit("`BISH GIVE SOME TXT!`")
             return
         sleep_time = 0.03
         typing_symbol = "|"
