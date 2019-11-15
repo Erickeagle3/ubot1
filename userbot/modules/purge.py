@@ -64,7 +64,7 @@ async def purgeme(delme):
 
         smsg = await delme.client.send_message(
             delme.chat_id,
-            "`Purge complete!` Purged "
+            "`Purge complete now fuck off!` Purged "
             + str(count)
             + " messages. **This auto-generated message shall be self destructed in 2 seconds.**",
         )
